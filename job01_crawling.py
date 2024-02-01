@@ -21,7 +21,7 @@ def scroll():
         while True:
             # 임의의 페이지 로딩 시간 설정
             # PC환경에 따라 로딩시간 최적화를 통해 scraping 시간 단축 가능
-            pause_time = random.uniform(1, 2)
+            pause_time = random.uniform(0.3, 0.6)
             # 페이지 최하단까지 스크롤
             driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
             # 페이지 로딩 대기
@@ -44,10 +44,6 @@ def scroll():
         print("에러 발생: ", e)
 
 
-
-
-
-
 # f-string
 options = Options()
 key_count = 0
@@ -55,12 +51,11 @@ user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 options.add_argument('User-Agent=' + user_agent)
 options.add_argument('lang=ko_KR')
 
+options.add_argument('headless')
+options.add_argument('window-size=1920x1080')
+options.add_argument("disable-gpu")
 
-# options.add_argument('headless')
-# options.add_argument('window-size=1920x1080')
-# options.add_argument("disable-gpu")
-#
- #driver = wb.Chrome(options=options)
+driver = wb.Chrome(options=options)
 
 options.add_argument('--start-maximized')
 
@@ -73,66 +68,49 @@ driver = wb.Chrome(options=options)
 
 try:
     driver.get(base_url)
-    driver.implicitly_wait(10)
+    time.sleep(2)
 except:
     print('drivet.get')
     exit(1)
 
-
-
-
-
-
 sample = driver.find_element(By.CSS_SELECTOR,'#contents > section > div.media-type-btn-wrap > div > div > div:nth-child(3) > button')
 driver.execute_script("arguments[0].click();", sample)
-time.sleep(2)
+time.sleep(1)
 sample = driver.find_element(By.XPATH,"//*[@id='contents']/section/div[4]/div[2]/div[1]/div[3]/div[2]/div[2]/div/button[1]")
 driver.execute_script("arguments[0].click();", sample)
-time.sleep(2)
+time.sleep(1)
 sample = driver.find_element(By.XPATH,"//*[@id='applyFilterButton']")
 driver.execute_script("arguments[0].click();", sample)
-time.sleep(2)
+time.sleep(1)
 
-
+scroll()
 movies=driver.find_elements(By.CLASS_NAME,"MovieItem")
 print(len(movies))
-df = pd.DataFrame()
+
 title_list=[]
 href_list=[]
 element_list=[]
-# for i in range(1,100):
-#     scroll()
-time.sleep(3)
-for movie in movies:
+
+
+time.sleep(2)
+
+for movie in movies: #영화리스트를 가져와서 해당 리스트의 영화제목  및 리뷰를 가져올 링크를 저장.
 
     item = movie.find_element(By.TAG_NAME,'a')
     title = item.get_attribute('title')
-    element_list.append(item)
     href  = item.get_attribute('href') + '/reviews'
     title_list.append(title)
-
     href_list.append(href)
+df = pd.DataFrame({'titles':title_list,'href':href_list})
+df.to_csv('./data/movie_href_data.csv',index=False)
 
-df['title'] = title_list
-df['element'] = element_list
-df['href'] = href_list
-print(df)
-
-
-for list in df['href']:
-    broser
-    time.sleep(1.5)
-    sample = driver.find_element(By.CLASS_NAME,"header__btn-close")
-    driver.execute_script("arguments[0].click();",sample)
-    time.sleep(1.5)
-    sample = driver.find_element(By.ID, "reviewsButton")
-    driver.execute_script("arguments[0].click();", sample)
-    scroll()
-
-
-    print(30)
-    time.sleep(40)
-    review_lists=driver.find_elements(By.CLASS_NAME,'review-item')
+# for list in df['href']:
+#     driver.get(list)
+#     time.sleep(1.5)
+#
+#
+#     print(30)
+#     time.sleep(40)
 
     # for review in review_lists:
     #     link = review.find_element(By.TAG_NAME,'a')
